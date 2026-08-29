@@ -25,8 +25,10 @@ const store = {
   }
 };
 
+store.setUsers(nexcart_users) //sets premade user accounts listed in data.js
+
 function money(n) {
-  return "₹" + Number(n).toLocaleString("en-IN");
+  return "₱" + Number(n).toLocaleString("en-PH");
 }
 
 function toast(msg) {
@@ -44,7 +46,7 @@ function updateCartCount() {
 
 function addToCart(id) {
   const product = PRODUCTS.find((p) => p.id === id);
-  if (!product || !product.stock) {
+  if (!product || !product.qty) {
     toast("This item is currently out of stock");
     return;
   }
@@ -80,7 +82,7 @@ function productCard(p) {
         <div class="price">${money(p.price)}</div>
         <div class="actions">
           <a class="btn-ghost" href="#/product/${p.id}" data-link>View</a>
-          ${p.stock
+          ${p.qty
             ? `<button class="btn" data-add="${p.id}">Add to cart</button>`
             : `<button class="btn-ghost" disabled>Out of stock</button>`}
         </div>
@@ -107,10 +109,10 @@ function renderHome() {
       </div>
       <h2 class="section-title">The New Standard for Refurbished Tech</h2>
       <div class="quotes">
-        <div class="quote">“Sold my laptop easily. Pickup was smooth and payment was instant.”<br><br><b>Rahul Verma</b> · Kolkata</div>
-        <div class="quote">“Great staff and fast service. Amazing experience with Nexcart!”<br><br><b>Suman Roy</b> · Kolkata</div>
-        <div class="quote">“Got the best price for my old laptop. Pickup was on time.”<br><br><b>Amit Sharma</b> · Kolkata</div>
-        <div class="quote">“Very professional and smooth process. Highly recommended!”<br><br><b>Neha Gupta</b> · Kolkata</div>
+        <div class="quote">“Sold my laptop easily. Pickup was smooth and payment was instant.”<br><br><b>Rahul Verma</b> · Cebu</div>
+        <div class="quote">“Great staff and fast service. Amazing experience with Nexcart!”<br><br><b>Suman Roy</b> · Cebu</div>
+        <div class="quote">“Got the best price for my old laptop. Pickup was on time.”<br><br><b>Amit Sharma</b> · Cebu</div>
+        <div class="quote">“Very professional and smooth process. Highly recommended!”<br><br><b>Neha Gupta</b> · Cebu</div>
       </div>
       <h2 class="section-title">Frequently Asked Questions</h2>
       <div class="faq">${FAQS.map((f) => `<details><summary>${f.q}</summary><p>${f.a}</p></details>`).join("")}</div>
@@ -167,7 +169,7 @@ function renderProduct(id) {
         <p>${p.specs}</p>
         <p>Grade: ${p.grade} · Warranty: ${p.warranty}</p>
         <p class="price" style="font-size:28px">${money(p.price)}</p>
-        ${p.stock
+        ${p.qty
           ? `<button class="btn" data-add="${p.id}">Add to cart</button>`
           : `<button class="btn-ghost" disabled>Out of stock</button>`}
       </div>
@@ -181,7 +183,7 @@ function renderSell() {
     <div class="wrap">
       <section class="sell-hero">
         <div>
-          <h1>Sell Old Laptop in Kolkata</h1>
+          <h1>Sell Old Laptop in Cebu</h1>
           <p class="perk">⚡ Free Same-Day Pickup</p>
           <p class="perk">💰 Instant Cash Payment</p>
           <p class="perk">🔒 100% Secure Data Wipe</p>
@@ -222,7 +224,7 @@ function renderCart() {
   if (!cart.length) {
     return `<div class="wrap"><h1>Cart</h1><p class="empty">Your cart is empty. <a href="#/shop" data-link>Continue shopping</a></p></div>`;
   }
-  const rows = cart.map((item) => {
+  const rows = cart.map((item) => { 
     const p = PRODUCTS.find((x) => x.id === item.id);
     return `
       <tr>
@@ -258,21 +260,79 @@ function renderCart() {
   `;
 }
 
+function renderInventory() {
+  setActiveNav("inventory");
+  const user = store.getUser() //get user data
+  if (user && user.role == "admin") {
+
+    const rows = PRODUCTS.map((item) => { //for every item in PRODUCTS
+      //const p = PRODUCTS.find((x) => x.id === item.id);
+      return `
+        <tr>
+          <td>${item.name}</td>
+          <td>${money(item.price)}</td>
+          <td>
+            <div class="qty">
+              <button data-qty="${item.id}" data-delta="-1">-</button>
+              <span>${item.qty}</span>
+              <button data-qty="${item.id}" data-delta="1">+</button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join(""); //append as STRING
+
+    return `
+    <div class="wrap">
+      <h2 class="section-title" id="quote">Product Inventory</h2>
+      <table class="cart-table">
+        <thead> <tr> <th>Product</th> <th>Price</th> <th>Qty</th> </tr> </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+    `;
+  }
+  else {
+    return `
+    <div class="wrap">
+      <h1> Access denied </h1>
+      <p> You must be an administrator to view this page. </p>
+    </div>
+    `;   
+  }
+}
+
 function renderAccount() {
   setActiveNav("account");
   const user = store.getUser();
   if (user) {
-    return `
-      <div class="wrap">
-        <div class="auth-card">
-          <h1>My account</h1>
-          <p>Signed in as <b>${user.name}</b></p>
-          <p>${user.email}</p>
-          <p>Orders: ${user.orders || 0}</p>
-          <button class="btn" id="logout">Log out</button>
+    if (user && user.role == "admin") {
+       return `
+        <div class="wrap">
+          <div class="auth-card">
+            <h1>My Admin Account</h1>
+            <p>Signed in as <b>${user.name}</b></p>
+            <p>${user.email}</p>
+            <button class="btn" id="logout">Log out</button>
+       
+          </div>
         </div>
-      </div>
-    `;
+      `;       
+    }
+    else if (user && user.role == "user") {
+       return `
+        <div class="wrap">
+          <div class="auth-card">
+            <h2>My User Account</h2>
+            <p>Signed in as <b>${user.name}</b></p>
+            <p>${user.email}</p>
+            <p>My orders: ${user.orders}</b></p>
+            <button class="btn" id="logout">Log out</button>
+          </div>
+        </div>
+      `;       
+    }    
+
   }
   return `
     <div class="wrap">
@@ -317,6 +377,7 @@ function startHero() {
   return () => clearInterval(timer);
 }
 
+
 function route() {
   const { path, params } = parseHash();
   const app = document.getElementById("app");
@@ -325,7 +386,22 @@ function route() {
   else if (path === "/sell") app.innerHTML = renderSell();
   else if (path === "/cart") app.innerHTML = renderCart();
   else if (path === "/account") app.innerHTML = renderAccount();
+  else if (path === "/inventory") {
+    const user = store.getUser();
+    if (user && user.role === "admin") {
+      app.innerHTML = renderInventory();
+    }
+    else {
+      app.innerHTML = `
+      <div class="wrap">
+        <h1> Access denied </h1>
+        <p> You must be an administrator to view this page. </p>
+      </div>
+      `;
+    }
+  }
   else app.innerHTML = renderHome();
+
   if (path === "/" || path === "") startHero();
   updateCartCount();
 }
@@ -415,7 +491,7 @@ document.addEventListener("submit", (e) => {
       <div class="quote-box">
         Estimated offer for ${data.get("name")}
         <strong>${money(quote)}</strong>
-        Free pickup in Kolkata · Instant cash after verification
+        Free pickup in Cebu · Instant cash after verification
       </div>`;
   }
   if (e.target.id === "auth-form") {
@@ -430,10 +506,10 @@ document.addEventListener("submit", (e) => {
         toast("Account already exists");
         return;
       }
-      const user = { name, email, password, orders: 0 };
+      const user = { name, email, password, role, orders: 0 };
       users.push(user);
       store.setUsers(users);
-      store.setUser({ name, email, orders: 0 });
+      store.setUser({ name, email, role:"user", orders: 0 });
       toast("Account created");
       route();
       return;
@@ -443,7 +519,7 @@ document.addEventListener("submit", (e) => {
       toast("Invalid email or password");
       return;
     }
-    store.setUser({ name: found.name, email: found.email, orders: found.orders || 0 });
+    store.setUser({ name: found.name, email: found.email, role: found.role, orders: found.orders || 0 });
     toast("Welcome back");
     route();
   }
