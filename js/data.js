@@ -1,12 +1,30 @@
+const nexcart_users = [
+  {
+    name: "adm",
+    email: "adm@gmail.com",
+    password: "1234",
+    role: "admin"
+  },
+  {
+    name: "user",
+    email: "user@gmail.com",
+    password: "1234",
+    role: "user",
+    orders: 0
+  }
+]
+
+
+
 const PRODUCTS = [
-  { id: "mba-m1", name: "Macbook Air M1", category: "Macbooks", price: 36000, grade: "Excellent", warranty: "12 months", stock: true, emoji: "💻", specs: "8GB RAM · 256GB SSD" },
-  { id: "hp-15s", name: "HP 15s slim", category: "Laptops", price: 25000, grade: "Good", warranty: "6 months", stock: false, emoji: "💻", specs: "8GB RAM · 512GB SSD" },
-  { id: "hp-victus", name: "HP Victus", category: "Gaming Laptops", price: 42000, grade: "Excellent", warranty: "12 months", stock: true, emoji: "🎮", specs: "16GB RAM · RTX 3050" },
-  { id: "mba-m2", name: "Macbook Air M2", category: "Macbooks", price: 52000, grade: "Excellent", warranty: "12 months", stock: true, emoji: "💻", specs: "8GB RAM · 256GB SSD" },
-  { id: "hp-victus-15", name: "HP Victus 15", category: "Gaming Laptops", price: 42000, grade: "Good", warranty: "12 months", stock: true, emoji: "🎮", specs: "16GB RAM · RTX 3050" },
-  { id: "rog-zephyrus", name: "Asus ROG Zephyrus", category: "Gaming Laptops", price: 88000, grade: "Excellent", warranty: "18 months", stock: true, emoji: "🎮", specs: "16GB RAM · RTX 4060" },
-  { id: "legion-5", name: "Lenovo Legion 5", category: "Gaming Laptops", price: 74000, grade: "Excellent", warranty: "18 months", stock: true, emoji: "🎮", specs: "16GB RAM · RTX 4060" },
-  { id: "nitro-5", name: "Acer Nitro 5", category: "Gaming Laptops", price: 52000, grade: "Good", warranty: "12 months", stock: true, emoji: "🎮", specs: "16GB RAM · RTX 3050" }
+  { id: "mba-m1", name: "Macbook Air M1", category: "Macbooks", price: 36000, grade: "Excellent", warranty: "12 months", qty: 5, emoji: "💻", specs: "8GB RAM · 256GB SSD" },
+  { id: "hp-15s", name: "HP 15s slim", category: "Laptops", price: 25000, grade: "Good", warranty: "6 months", qty: 3, emoji: "💻", specs: "8GB RAM · 512GB SSD" },
+  { id: "hp-victus", name: "HP Victus", category: "Gaming Laptops", price: 42000, grade: "Excellent", warranty: "12 months", qty: 5, emoji: "🎮", specs: "16GB RAM · RTX 3050" },
+  { id: "mba-m2", name: "Macbook Air M2", category: "Macbooks", price: 52000, grade: "Excellent", warranty: "12 months", qty: 5, emoji: "💻", specs: "8GB RAM · 256GB SSD" },
+  { id: "hp-victus-15", name: "HP Victus 15", category: "Gaming Laptops", price: 42000, grade: "Good", warranty: "12 months", qty: 5, emoji: "🎮", specs: "16GB RAM · RTX 3050" },
+  { id: "rog-zephyrus", name: "Asus ROG Zephyrus", category: "Gaming Laptops", price: 88000, grade: "Excellent", warranty: "18 months", qty: 5, emoji: "🎮", specs: "16GB RAM · RTX 4060" },
+  { id: "legion-5", name: "Lenovo Legion 5", category: "Gaming Laptops", price: 74000, grade: "Excellent", warranty: "18 months", qty: 5, emoji: "🎮", specs: "16GB RAM · RTX 4060" },
+  { id: "nitro-5", name: "Acer Nitro 5", category: "Gaming Laptops", price: 52000, grade: "Good", warranty: "12 months", qty: 5, emoji: "🎮", specs: "16GB RAM · RTX 3050" }
 ];
 
 const SLIDES = [

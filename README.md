@@ -19,3 +19,31 @@ Double-click `index.html`, or from this folder:
 ```bash
 npx --yes serve .
 ```
+
+# Update notes
+- A copy of the product inventory is now stored in local storage for demonstration purposes.
+- The copy is now used in place of the PRODUCTS array so changes to stock can reflect properly.
+Note: unlike the Cart object which persists, the inventory is reset to default values whenever you refresh.
+
+- Added Working qty buttons for the Cart page.
+- Added logic to:
+    - return an error if exceeding inventory quantity
+    - disable and white out the "-" button if qty is 1
+    - disable and white out the "+" button if cart product qty is greater than or equal to available product stock
+- Clicking the Checkout button now deducts from inventory stock if checkout is successful.
+- Clicking the Checkout button returns an error if:
+    - the amount of product in the cart specified exceeds the amount of product in stock at the time of checkout. 
+- Adding to cart via the "Add to Cart" button on the product cards returns an error if:
+    - Stock is unavailable.
+    - If current quantity in cart exceeds the available stock.
+- The "Add to cart" button is automatically disabled and changed to "Stock unavailable" if stock is unavailable.
+------------------
+## Bugfixes:
+- ~~Cannot use the "Add to cart" button to add OTHER products to the cart if the entire stock of at least one product is already in the cart.~~
+- ~~Cannot use the "-" quantity button to deduct from the specified quantity in the cart if the current quantity exceeds inventory stock.~~
+- ~~Product cards on the home page do not get disabled if product is out of stock.~~
+------
+## Todo(?)
+- Create an inventory page? 
+- Require logging in to add to cart/check out
+- Adapt the app to use a proper database eventually
