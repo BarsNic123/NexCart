@@ -40,9 +40,9 @@ CART:
     - if current quantity in cart exceeds the available stock.
 ------------------
 ## Bugfixes:
-- Cannot use the "Add to cart" button to add OTHER products to the cart if the entire stock of at least one product is already in the cart.
-- Cannot use the "-" quantity button to deduct from the specified quantity in the cart if the current quantity exceeds inventory stock.
-- Product card does not get disabled if product is out of stock.
+- ~~Cannot use the "Add to cart" button to add OTHER products to the cart if the entire stock of at least one product is already in the cart.~~
+- ~~Cannot use the "-" quantity button to deduct from the specified quantity in the cart if the current quantity exceeds inventory stock.~~
+- ~~Product card does not get disabled if product is out of stock.~~
 ------
 ## Todo(?)
 - Create an inventory page? 
