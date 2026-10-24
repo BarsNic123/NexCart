@@ -20,9 +20,9 @@ Double-click `index.html`, or from this folder:
 npx --yes serve .
 ```
 
-## Patch notes
--productinventory is now stored in localinventory for demonstration purposes.
--productinventory is now used in place of the PRODUCTS array for demonstration purposes so changes to stock can reflect properly.
+# Update notes
+- productinventory is now stored in localinventory for demonstration purposes.
+- productinventory is now used in place of the PRODUCTS array for demonstration purposes so changes to stock can reflect properly.
 note: unlike the Cart array which persists, the inventory is reset to default values when you refresh.
 
 CART:
@@ -39,12 +39,12 @@ CART:
     - stock is unavailable.
     - if current quantity in cart exceeds the available stock.
 ------------------
-Bugfixes:
+## Bugfixes:
 - Cannot use the "Add to cart" button to add OTHER products to the cart if the entire stock of at least one product is already in the cart.
 - Cannot use the "-" quantity button to deduct from the specified quantity in the cart if the current quantity exceeds inventory stock.
 - Product card does not get disabled if product is out of stock.
 ------
-Todo(?)
+## Todo(?)
 - Create an inventory page? 
 - Require logging in to add to cart/check out
 - Adapt the app to use a proper database eventually
