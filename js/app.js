@@ -1,6 +1,8 @@
 const CART_KEY = "nexcart_cart";
 const USER_KEY = "nexcart_user";
 const USERS_KEY = "nexcart_users";
+//inventory is stored in local storage for now
+const INVENTORY_KEY = "nexcart_inventory"
 
 const store = {
   getCart() {
@@ -22,10 +24,17 @@ const store = {
   },
   setUsers(users) {
     localStorage.setItem(USERS_KEY, JSON.stringify(users));
+  },
+  getInventory() {
+    try { return JSON.parse(localStorage.getItem(INVENTORY_KEY) || "[]"); } catch { return []; }
+  },
+  setInventory(products) {
+    localStorage.setItem(INVENTORY_KEY, JSON.stringify(products));
   }
-};
+}
 
 store.setUsers(nexcart_users) //sets premade user accounts listed in data.js
+store.setInventory(PRODUCTS) //sets nexcart inventory, defined in data.js in local storage
 
 function money(n) {
   return "₱" + Number(n).toLocaleString("en-PH");
@@ -232,9 +241,9 @@ function renderCart() {
         <td>${money(p.price)}</td>
         <td>
           <div class="qty">
-            <button data-qty="${p.id}" data-delta="-1">−</button>
+            <button data-qty="${p.id}" data-delta="-1" ${item.qty <= 1 ? "disabled" : ""}>−</button>
             <span>${item.qty}</span>
-            <button data-qty="${p.id}" data-delta="1">+</button>
+            <button data-qty="${p.id}" data-delta="1" >+</button>
           </div>
         </td>
         <td>${money(p.price * item.qty)}</td>
@@ -408,38 +417,105 @@ function route() {
 
 document.addEventListener("click", (e) => {
   const add = e.target.closest("[data-add]");
-  if (add) addToCart(add.dataset.add);
+  if (add) {
+    if (store.getInventory().find((i) => i.qty <= 0)) { //check if inventory stock > 0 AKA is there anything to add?
+      toast("Product is unavailable");
+      return;
+    }
+    else { //if stock is available...
+      cartProduct = store.getCart().find((i) => i.qty) //check cart if product has already been added.
+      if (cartProduct) { //if product found in cart,
+        console.log(cartProduct);
+        inventoryProduct = store.getInventory().find((i) => i.id === cartProduct.id);
+        inventoryProductQty = Number(inventoryProduct.qty);
+        console.log(inventoryProductQty);
+        newQty = inventoryProductQty - Number(cartProduct.qty);
+        console.log(newQty);
+        if (newQty <= 0) { // if the addition exceeds the current stock in inventory,
+          toast("Cannot exceed current stock.");
+          return; 
+        }
+        else { //otherwise, if it doesn't exceed current stock...
+          addToCart(add.dataset.add); //add to cart.
+        }
+      }
+      else {  //otherwise, if not in cart yet (and stock is available)...
+        addToCart(add.dataset.add); //add to cart.
+      }
+    }
+  }
 
   const filter = e.target.closest("[data-filter]");
   if (filter) location.hash = `#/shop?category=${encodeURIComponent(filter.dataset.filter)}`;
 
   const qty = e.target.closest("[data-qty]");
-  if (qty) {
-    const cart = store.getCart();
-    const item = cart.find((i) => i.id === qty.dataset.qty);
-    if (item) item.qty = Math.max(1, item.qty + Number(qty.dataset.delta));
-    store.setCart(cart);
-    route();
+
+  if (qty) { //if element with CSS selector [data-qty] is there
+    const productId = qty.dataset.qty; //declare product Id variable and store product Id there (data-qty stores product id)
+    const delta = Number(qty.dataset.delta); // declare delta variable and stores delta from same element
+
+    const cart = store.getCart(); //retrieves cart 
+    const inventory = store.getInventory(); //retrieves inventory
+
+    const item = cart.find(x => x.id === productId); //retrieves the corresponding element (item) from the cart
+    const product = inventory.find(x => x.id === productId); //retrieves corresponding item in inventory
+
+    if (!item || !product) return; //if item does not exist in cart or inventory do nothing (error handling)
+
+    const newQty = item.qty + delta;  //declare newqty variable, assign to it the sum of the quantity of the respective item in the cart and the difference
+
+    if (newQty < 1) {     //if the resulting quantity is lesser than 1, do nothing
+      return;
+    }
+
+    if (newQty > product.qty) { //if the resulting quantity exceeds the current stock, do nothing and return a toast error message
+      toast("Not enough stock available");
+      return;
+    }
+
+    item.qty = newQty; // assign value of new qty to cart item's qty. This change is saved in the cart array itself as find() retrieves the element itself and not a copy
+
+    store.setCart(cart); // save changes of temporary cart to main cart
+    route(); //"refresh" page to reflect changes
   }
 
   const remove = e.target.closest("[data-remove]");
   if (remove) {
-    store.setCart(store.getCart().filter((i) => i.id !== remove.dataset.remove));
+    store.setCart(store.getCart().filter((i) => i.id !== remove.dataset.remove)); //retrieves cart, looks for the corresponding item, removes it and sets cart)
     route();
   }
 
   if (e.target.id === "checkout") {
-    const user = store.getUser();
-    if (!user) {
+    const user = store.getUser(); //retrieves the current user
+    if (!user) { // if there is no user (not logged in), redirected to the account page
       toast("Please log in to checkout");
       location.hash = "#/account";
       return;
     }
+    const cart = store.getCart(); //declares cart variable and copies the cart array to store temporarily
+    const inventory = store.getInventory(); //declares inventory variable and copies the inventory array to store temporarily
+
+    //validation check if inventory still have stock for selected products AT time of checkout
+    for (const p of cart) { //for every entry in the cart array...
+      const matchingProduct = inventory.find((i) => i.id === p.id); //retrieve product FROM inventory whose id matches product FROM cart
+      if (matchingProduct.qty < p.qty) { //if stock is less than specified amount of product in cart...
+        toast(`Not enough stock for ${matchingProduct.name}`);
+        return;
+      }
+    }
+
+    for (const p of cart) { //for every entry in the cart array...
+      const matchingProduct = inventory.find((i) => i.id === p.id); //retrieve product FROM inventory whose id matches product FROM cart
+      matchingProduct.qty -= p.qty //deduct qty of product FROM cart from qty of product FROM inventory
+    }
+
     user.orders = (user.orders || 0) + 1;
-    store.setUser(user);
-    store.setCart([]);
+    store.setUser(user); //updates User
+    store.setInventory(inventory); //updates the current inventory
+    store.setCart([]); //empties the cart
+
     toast("Order placed. Thank you!");
-    location.hash = "#/";
+    location.hash = "#/"; //return to homepage
   }
 
   if (e.target.id === "logout") {
