@@ -54,7 +54,7 @@ function updateCartCount() {
 }
 
 function addToCart(id) {
-  const product = PRODUCTS.find((p) => p.id === id);
+  const product = store.getInventory().find((p) => p.id === id);
   if (!product || !product.qty) {
     toast("This item is currently out of stock");
     return;
@@ -109,9 +109,9 @@ function renderHome() {
     </section>
     <div class="wrap">
       <h2 class="section-title">Best Seller</h2>
-      <div class="grid">${PRODUCTS.slice(0, 4).map(productCard).join("")}</div>
+      <div class="grid">${store.getInventory().slice(0, 4).map(productCard).join("")}</div>
       <h2 class="section-title">Gaming Laptops</h2>
-      <div class="grid">${PRODUCTS.filter((p) => p.category === "Gaming Laptops").map(productCard).join("")}</div>
+      <div class="grid">${store.getInventory().filter((p) => p.category === "Gaming Laptops").map(productCard).join("")}</div>
       <div class="stats">
         <div><strong>50+</strong>Quality Checks</div>
         <div><strong>3 year+</strong>Full Warranty</div>
@@ -134,7 +134,7 @@ function renderShop(params) {
   const category = params.get("category") || "All";
   const q = (params.get("q") || "").toLowerCase();
   const sort = params.get("sort") || "menu";
-  let items = PRODUCTS.filter((p) => {
+  let items = store.getInventory().filter((p) => { //originally PRODUCTS.filter, but changed for functionality demonstration purposes
     const catOk = category === "All" || p.category === category;
     const qOk = !q || p.name.toLowerCase().includes(q) || p.category.toLowerCase().includes(q);
     return catOk && qOk;
@@ -142,7 +142,7 @@ function renderShop(params) {
   if (sort === "price") items = [...items].sort((a, b) => a.price - b.price);
   if (sort === "price-desc") items = [...items].sort((a, b) => b.price - a.price);
   if (sort === "latest") items = [...items].reverse();
-  const cats = ["All", ...new Set(PRODUCTS.map((p) => p.category))];
+  const cats = ["All", ...new Set(store.getInventory().map((p) => p.category))];
   return `
     <div class="wrap">
       <h1>Shop</h1>
@@ -165,7 +165,7 @@ function renderShop(params) {
 
 function renderProduct(id) {
   setActiveNav("shop");
-  const p = PRODUCTS.find((x) => x.id === id);
+  const p = store.getInventory().find((x) => x.id === id);
   if (!p) return `<div class="wrap"><p class="empty">Product not found.</p></div>`;
   return `
     <div class="wrap sell-hero">
@@ -234,7 +234,7 @@ function renderCart() {
     return `<div class="wrap"><h1>Cart</h1><p class="empty">Your cart is empty. <a href="#/shop" data-link>Continue shopping</a></p></div>`;
   }
   const rows = cart.map((item) => { 
-    const p = PRODUCTS.find((x) => x.id === item.id);
+    const p = store.getInventory().find((x) => x.id === item.id);
     return `
       <tr>
         <td>${p.name}</td>
@@ -243,7 +243,7 @@ function renderCart() {
           <div class="qty">
             <button data-qty="${p.id}" data-delta="-1" ${item.qty <= 1 ? "disabled" : ""}>−</button>
             <span>${item.qty}</span>
-            <button data-qty="${p.id}" data-delta="1" >+</button>
+            <button data-qty="${p.id}" data-delta="1" ${!p || item.qty >= p.qty ? "disabled" : ""}>+</button>
           </div>
         </td>
         <td>${money(p.price * item.qty)}</td>
@@ -251,7 +251,7 @@ function renderCart() {
       </tr>`;
   }).join("");
   const total = cart.reduce((sum, item) => {
-    const p = PRODUCTS.find((x) => x.id === item.id);
+    const p = store.getInventory().find((x) => x.id === item.id);
     return sum + p.price * item.qty;
   }, 0);
   return `
@@ -270,11 +270,12 @@ function renderCart() {
 }
 
 function renderInventory() {
+  /*
   setActiveNav("inventory");
   const user = store.getUser() //get user data
   if (user && user.role == "admin") {
 
-    const rows = PRODUCTS.map((item) => { //for every item in PRODUCTS
+    const rows = store.getInventory().map((item) => { //for every item in PRODUCTS
       //const p = PRODUCTS.find((x) => x.id === item.id);
       return `
         <tr>
@@ -309,6 +310,7 @@ function renderInventory() {
     </div>
     `;   
   }
+ */
 }
 
 function renderAccount() {
@@ -418,20 +420,19 @@ function route() {
 document.addEventListener("click", (e) => {
   const add = e.target.closest("[data-add]");
   if (add) {
-    if (store.getInventory().find((i) => i.qty <= 0)) { //check if inventory stock > 0 AKA is there anything to add?
+    productId = add.dataset.add; // declares variable to store the html element's respective product id
+    inventoryItem = store.getInventory().find((i) => i.id === productId); // retrieve the product from store inventory that MATCHES the current product's ID
+    productInventoryQty = Number(inventoryItem.qty); // take qty value of the corresponding item in inventory
+
+    if (productInventoryQty <= 0) { //check if inventory stock > 0 AKA is there anything to add?
       toast("Product is unavailable");
       return;
     }
     else { //if stock is available...
-      cartProduct = store.getCart().find((i) => i.qty) //check cart if product has already been added.
+      cartProduct = store.getCart().find((i) => i.id === productId) //check cart if the corresponding product has already been added.
       if (cartProduct) { //if product found in cart,
-        console.log(cartProduct);
-        inventoryProduct = store.getInventory().find((i) => i.id === cartProduct.id);
-        inventoryProductQty = Number(inventoryProduct.qty);
-        console.log(inventoryProductQty);
-        newQty = inventoryProductQty - Number(cartProduct.qty);
-        console.log(newQty);
-        if (newQty <= 0) { // if the addition exceeds the current stock in inventory,
+        newQty = productInventoryQty - Number(cartProduct.qty); //declare new variable and find the result of subtracting current cart quantity from available stock.
+        if (newQty <= 0) { // if the result exceeds the current stock in inventory, return an error.
           toast("Cannot exceed current stock.");
           return; 
         }
@@ -464,11 +465,11 @@ document.addEventListener("click", (e) => {
 
     const newQty = item.qty + delta;  //declare newqty variable, assign to it the sum of the quantity of the respective item in the cart and the difference
 
-    if (newQty < 1) {     //if the resulting quantity is lesser than 1, do nothing
+    if (delta < 0 && newQty < 1) { //if delta is NEGATIVE (AKA using the - button to subtract units) AND the resulting quantity is lesser than 1, do nothing (error handling)
       return;
     }
 
-    if (newQty > product.qty) { //if the resulting quantity exceeds the current stock, do nothing and return a toast error message
+    if (delta > 0 && newQty > product.qty) { //if delta is POSITIVE (AKA using the + button to add more units) AND the resulting quantity exceeds the current stock, do nothing and return a toast error message
       toast("Not enough stock available");
       return;
     }
@@ -605,7 +606,7 @@ document.getElementById("search-input").addEventListener("input", (e) => {
   const q = e.target.value.trim().toLowerCase();
   const box = document.getElementById("search-dropdown");
   if (!q) { box.hidden = true; return; }
-  const hits = PRODUCTS.filter((p) => p.name.toLowerCase().includes(q)).slice(0, 5);
+  const hits = store.getInventory().filter((p) => p.name.toLowerCase().includes(q)).slice(0, 5);
   box.hidden = !hits.length;
   box.innerHTML = hits.map((p) => `<div class="search-item" data-goto="${p.id}"><span>${p.name}</span><span>${money(p.price)}</span></div>`).join("");
 });
