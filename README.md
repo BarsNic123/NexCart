@@ -21,28 +21,27 @@ npx --yes serve .
 ```
 
 # Update notes
-- productinventory is now stored in localinventory for demonstration purposes.
-- productinventory is now used in place of the PRODUCTS array for demonstration purposes so changes to stock can reflect properly.
-note: unlike the Cart array which persists, the inventory is reset to default values when you refresh.
+- A copy of the product inventory is now stored in local storage for demonstration purposes.
+- The copy is now used in place of the PRODUCTS array so changes to stock can reflect properly.
+Note: unlike the Cart object which persists, the inventory is reset to default values whenever you refresh.
 
-CART:
-- working qty buttons for cart page
-- added logic to:
+- Added Working qty buttons for the Cart page.
+- Added logic to:
     - return an error if exceeding inventory quantity
     - disable and white out the "-" button if qty is 1
     - disable and white out the "+" button if cart product qty is greater than or equal to available product stock
-- Clicking the Checkout button now deducts from inventory stock.
-- Click the Checkout button returns an error if:
-    - the amount of product in the cart specifies exceeds the amount of units in inventory. 
-
-- Adding to cart via the "Add to Cart" button the product card returns an error if:
-    - stock is unavailable.
-    - if current quantity in cart exceeds the available stock.
+- Clicking the Checkout button now deducts from inventory stock if checkout is successful.
+- Clicking the Checkout button returns an error if:
+    - the amount of product in the cart specified exceeds the amount of product in stock at the time of checkout. 
+- Adding to cart via the "Add to Cart" button on the product cards returns an error if:
+    - Stock is unavailable.
+    - If current quantity in cart exceeds the available stock.
+- The "Add to cart" button is automatically disabled and changed to "Stock unavailable" if stock is unavailable.
 ------------------
 ## Bugfixes:
 - ~~Cannot use the "Add to cart" button to add OTHER products to the cart if the entire stock of at least one product is already in the cart.~~
 - ~~Cannot use the "-" quantity button to deduct from the specified quantity in the cart if the current quantity exceeds inventory stock.~~
-- ~~Product card does not get disabled if product is out of stock.~~
+- ~~Product cards on the home page do not get disabled if product is out of stock.~~
 ------
 ## Todo(?)
 - Create an inventory page? 
